@@ -1,5 +1,6 @@
 // app/api/login/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import { setAuthCookies } from "@/app/lib/auth-cookies";
 
 export async function POST(request: NextRequest) {
   const { email, password } = await request.json();
@@ -15,32 +16,9 @@ export async function POST(request: NextRequest) {
   }
 
   const data = await djangoResponse.json();
-  // data = { access, refresh, role, ... }
-    const response = NextResponse.json({ role: data.role });
 
-  response.cookies.set("access_token", data.access, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 8, // 8 hours — matches your Django JWT expiry
-  });
-
-   response.cookies.set("refresh_token", data.refresh, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 7, // 7 days — matches REFRESH_TOKEN_LIFETIME
-  });
-
-  response.cookies.set("role", data.role, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 8,
-  });
+  const response = NextResponse.json({ role: data.role });
+  setAuthCookies(response, { access: data.access, refresh: data.refresh, role: data.role });
 
   return response;
 }
