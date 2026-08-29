@@ -1,10 +1,10 @@
-// app/api/students/route.ts
+// app/api/classes/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { djangoFetch } from "@/app/lib/django-fetch";
 import { setAuthCookies } from "@/app/lib/auth-cookies";
 
 export async function GET(request: NextRequest) {
-  const { data, status, newCookies } = await djangoFetch(request, "/api/students/");
+  const { data, status, newCookies } = await djangoFetch(request, "/api/academics/classes/");
 
   const response = NextResponse.json(data, { status });
 
@@ -13,7 +13,6 @@ export async function GET(request: NextRequest) {
   }
 
   return response;
-
 }
 export async function POST(request: NextRequest) {
   const accessToken = request.cookies.get("access_token")?.value;
