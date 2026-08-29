@@ -1,55 +1,49 @@
-// app/admin/students/[id]/edit/page.tsx
+// app/admin/teachers/[id]/edit/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 
-type ClassOption = { id: number; class_name: string; section: string };
+type SubjectOption = { id: number; subject_name: string; subject_code: string };
 
-export default function EditStudentPage() {
+export default function EditTeacherPage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
 
-  const [classes, setClasses] = useState<ClassOption[]>([]);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [subjects, setSubjects] = useState<SubjectOption[]>([]);
+  const [selectedSubjects, setSelectedSubjects] = useState<number[]>([]);
 
   const [form, setForm] = useState({
     first_name: "",
     last_name: "",
-    student_class: "",
-    date_of_birth: "",
-    gender: "M",
-    parent_name: "",
-    parent_contact: "",
+    qualification: "",
+    contact: "",
   });
-  const [photo, setPhoto] = useState<File | null>(null);
-  const [existingPhotoUrl, setExistingPhotoUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/classes")
+    fetch("/api/subjects")
       .then((res) => res.json())
-      .then(setClasses);
+      .then(setSubjects)
+      .catch(() => {});
 
-    fetch(`/api/students/${id}`)
+    fetch(`/api/teachers/${id}`)
       .then((res) => res.json())
       .then((data) => {
         setForm({
           first_name: data.first_name,
           last_name: data.last_name,
-          student_class: String(data.student_class),
-          date_of_birth: data.date_of_birth,
-          gender: data.gender,
-          parent_name: data.parent_name,
-          parent_contact: data.parent_contact,
+          qualification: data.qualification || "",
+          contact: data.contact || "",
         });
-        setExistingPhotoUrl(data.photo);
+        setSelectedSubjects(data.subjects || []);
         setLoading(false);
       })
       .catch(() => {
-        setError("Failed to load student");
+        setError("Failed to load teacher");
         setLoading(false);
       });
   }, [id]);
@@ -57,18 +51,16 @@ export default function EditStudentPage() {
   function updateField(field: string, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
   }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setSubmitting(true);
 
-    const data = new FormData();
-    Object.entries(form).forEach(([key, value]) => data.append(key, value));
-    if (photo) data.append("photo", photo);
-
-    const res = await fetch(`/api/students/${id}`, {
+    const res = await fetch(`/api/teachers/${id}`, {
       method: "PATCH",
-      body: data,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...form, subjects: selectedSubjects }),
     });
 
     setSubmitting(false);
@@ -79,7 +71,7 @@ export default function EditStudentPage() {
       return;
     }
 
-    router.push("/admin/students");
+    router.push("/admin/teachers");
   }
 
   if (loading) {
@@ -103,7 +95,7 @@ export default function EditStudentPage() {
 
   return (
     <div>
-      <h2 className="mb-6 text-xl font-semibold text-navy">Edit Student</h2>
+      <h2 className="mb-6 text-xl font-semibold text-navy">Edit Teacher</h2>
 
       <form
         onSubmit={handleSubmit}
@@ -138,92 +130,74 @@ export default function EditStudentPage() {
           </div>
         </div>
 
-        <div className="mb-4 grid grid-cols-2 gap-4">
-          <div>
-            <label className="mb-1 block text-sm text-navy/70">Class</label>
-            <select
-              value={form.student_class}
-              onChange={(e) => updateField("student_class", e.target.value)}
-              required
-              className="w-full rounded-md border border-line px-3 py-2 text-sm outline-none focus:border-cobalt"
-            >
-              <option value="">Select a class</option>
-              {classes.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.class_name} {c.section}
+        <div className="mb-4">
+          <label className="mb-1 block text-sm text-navy/70">Subjects</label>
+          <select
+            value=""
+            onChange={(e) => {
+              const sid = Number(e.target.value);
+              if (sid && !selectedSubjects.includes(sid)) {
+                setSelectedSubjects((prev) => [...prev, sid]);
+              }
+            }}
+            className="w-full rounded-md border border-line px-3 py-2 text-sm outline-none focus:border-cobalt"
+          >
+            <option value="">Add a subject...</option>
+            {subjects
+              .filter((s) => !selectedSubjects.includes(s.id))
+              .map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.subject_name}
                 </option>
               ))}
-            </select>
-          </div>
-          <div>
-            <label className="mb-1 block text-sm text-navy/70">Gender</label>
-            <select
-              value={form.gender}
-              onChange={(e) => updateField("gender", e.target.value)}
-              className="w-full rounded-md border border-line px-3 py-2 text-sm outline-none focus:border-cobalt"
-            >
-              <option value="M">Male</option>
-              <option value="F">Female</option>
-            </select>
-          </div>
-        </div>
+          </select>
 
-        <div className="mb-4">
-          <label className="mb-1 block text-sm text-navy/70">
-            Date of Birth
-          </label>
-          <input
-            type="date"
-            value={form.date_of_birth}
-            onChange={(e) => updateField("date_of_birth", e.target.value)}
-            required
-            className="w-full rounded-md border border-line px-3 py-2 text-sm outline-none focus:border-cobalt"
-          />
-        </div>
-
-        <div className="mb-4 grid grid-cols-2 gap-4">
-          <div>
-            <label className="mb-1 block text-sm text-navy/70">
-              Parent Name
-            </label>
-            <input
-              value={form.parent_name}
-              onChange={(e) => updateField("parent_name", e.target.value)}
-              required
-              className="w-full rounded-md border border-line px-3 py-2 text-sm outline-none focus:border-cobalt"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm text-navy/70">
-              Parent Contact
-            </label>
-            <input
-              value={form.parent_contact}
-              onChange={(e) => updateField("parent_contact", e.target.value)}
-              required
-              className="w-full rounded-md border border-line px-3 py-2 text-sm outline-none focus:border-cobalt"
-            />
-          </div>
-        </div>
-
-        <div className="mb-6">
-          <label className="mb-1 block text-sm text-navy/70">Photo</label>
-          {existingPhotoUrl && !photo && (
-            <img
-              src={existingPhotoUrl}
-              alt="Current"
-              className="mb-2 h-16 w-16 rounded-full object-cover"
-            />
+          {selectedSubjects.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {subjects
+                .filter((s) => selectedSubjects.includes(s.id))
+                .map((s) => (
+                  <span
+                    key={s.id}
+                    className="flex items-center gap-1 rounded-full bg-cobalt/10 px-3 py-1 text-sm text-cobalt"
+                  >
+                    {s.subject_name}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSelectedSubjects((prev) =>
+                          prev.filter((sid) => sid !== s.id),
+                        )
+                      }
+                      className="text-cobalt/60 hover:text-cobalt"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+            </div>
           )}
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setPhoto(e.target.files?.[0] ?? null)}
-            className="text-sm text-navy/70"
-          />
-          <p className="mt-1 text-xs text-navy/50">
-            Leave empty to keep the current photo
-          </p>
+        </div>
+
+        <div className="mb-6 grid grid-cols-2 gap-4">
+          <div>
+            <label className="mb-1 block text-sm text-navy/70">
+              Qualification
+            </label>
+            <input
+              value={form.qualification}
+              onChange={(e) => updateField("qualification", e.target.value)}
+              className="w-full rounded-md border border-line px-3 py-2 text-sm outline-none focus:border-cobalt"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm text-navy/70">Contact</label>
+            <input
+              value={form.contact}
+              onChange={(e) => updateField("contact", e.target.value)}
+              className="w-full rounded-md border border-line px-3 py-2 text-sm outline-none focus:border-cobalt"
+            />
+          </div>
         </div>
 
         <div className="flex gap-3">
@@ -236,7 +210,7 @@ export default function EditStudentPage() {
           </button>
           <button
             type="button"
-            onClick={() => router.push("/admin/students")}
+            onClick={() => router.push("/admin/teachers")}
             className="rounded-md border border-line px-4 py-2 text-sm font-medium text-navy/70 hover:bg-paper"
           >
             Cancel

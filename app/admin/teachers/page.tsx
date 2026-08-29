@@ -1,24 +1,22 @@
-// app/admin/students/page.tsx
+// app/admin/teachers/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import TableSkeleton from "@/app/components/TableSkeleton";
 
-type Student = {
+type Teacher = {
   id: number;
   email: string;
   first_name: string;
   last_name: string;
-  student_class: number;
-  gender: string;
-  parent_name: string;
-  parent_contact: string;
-  photo: string | null;
+  qualification: string | null;
+  contact: string | null;
+  subject_names: string[];
 };
 
-export default function StudentsPage() {
-  const [students, setStudents] = useState<Student[]>([]);
+export default function TeachersPage() {
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [error, setError] = useState("");
@@ -26,14 +24,14 @@ export default function StudentsPage() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
   useEffect(() => {
-    fetch("/api/students")
+    fetch("/api/teachers")
       .then((res) => res.json())
       .then((data) => {
-        setStudents(data);
+        setTeachers(data);
         setLoading(false);
       })
       .catch(() => {
-        setError("Failed to load students");
+        setError("Failed to load teachers");
         setLoading(false);
       });
   }, []);
@@ -49,16 +47,16 @@ export default function StudentsPage() {
     setConfirmDeleteId(null);
     setDeletingId(id);
 
-    const res = await fetch(`/api/students/${id}`, { method: "DELETE" });
+    const res = await fetch(`/api/teachers/${id}`, { method: "DELETE" });
 
     if (!res.ok) {
-      alert("Failed to delete student");
+      alert("Failed to delete teacher");
       setDeletingId(null);
       return;
     }
 
     setTimeout(() => {
-      setStudents((prev) => prev.filter((s) => s.id !== id));
+      setTeachers((prev) => prev.filter((t) => t.id !== id));
       setDeletingId(null);
     }, 250);
   }
@@ -70,7 +68,7 @@ export default function StudentsPage() {
           <div className="h-6 w-32 animate-pulse rounded bg-line" />
           <div className="mt-2 h-4 w-24 animate-pulse rounded bg-line" />
         </div>
-        <TableSkeleton cols={8} />
+        <TableSkeleton cols={6} />
       </div>
     );
   }
@@ -79,52 +77,30 @@ export default function StudentsPage() {
     return <p className="text-sm text-coral">{error}</p>;
   }
 
-  const filtered = students.filter((s) =>
-    `${s.first_name} ${s.last_name} ${s.email}`
+  const filtered = teachers.filter((t) =>
+    `${t.first_name} ${t.last_name} ${t.email} ${t.subject_names.join(", ")}`
       .toLowerCase()
       .includes(search.toLowerCase()),
   );
-
-  const maleCount = students.filter((s) => s.gender === "M").length;
-  const femaleCount = students.filter((s) => s.gender === "F").length;
 
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-navy">Students</h2>
-          <p className="text-sm text-navy/60">{students.length} enrolled</p>
+          <h2 className="text-xl font-semibold text-navy">Teachers</h2>
+          <p className="text-sm text-navy/60">{teachers.length} on staff</p>
         </div>
         <Link
-          href="/admin/students/add"
+          href="/admin/teachers/add"
           className="rounded-md bg-cobalt px-4 py-2 text-sm font-medium text-white transition hover:bg-cobalt/90"
         >
-          + Add Student
+          + Add Teacher
         </Link>
-      </div>
-
-      <div className="mb-6 grid grid-cols-3 gap-4">
-        <div className="rounded-lg border border-line bg-white p-4">
-          <p className="text-xs text-navy/60">Total Students</p>
-          <p className="mt-1 text-2xl font-semibold text-navy">
-            {students.length}
-          </p>
-        </div>
-        <div className="rounded-lg border border-line bg-white p-4">
-          <p className="text-xs text-navy/60">Male</p>
-          <p className="mt-1 text-2xl font-semibold text-cobalt">{maleCount}</p>
-        </div>
-        <div className="rounded-lg border border-line bg-white p-4">
-          <p className="text-xs text-navy/60">Female</p>
-          <p className="mt-1 text-2xl font-semibold text-coral">
-            {femaleCount}
-          </p>
-        </div>
       </div>
 
       <input
         type="text"
-        placeholder="Search by name or email..."
+        placeholder="Search by name, email, or subject..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         className="mb-4 w-full max-w-sm rounded-md border border-line px-3 py-2 text-sm text-navy outline-none transition focus:border-cobalt"
@@ -134,64 +110,68 @@ export default function StudentsPage() {
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-line bg-paper">
-              <th className="px-4 py-3 font-medium text-navy/70">Photo</th>
               <th className="px-4 py-3 font-medium text-navy/70">Name</th>
               <th className="px-4 py-3 font-medium text-navy/70">Email</th>
-              <th className="px-4 py-3 font-medium text-navy/70">Class</th>
-              <th className="px-4 py-3 font-medium text-navy/70">Gender</th>
-              <th className="px-4 py-3 font-medium text-navy/70">Parent</th>
+              <th className="px-4 py-3 font-medium text-navy/70">Subject</th>
+              <th className="px-4 py-3 font-medium text-navy/70">
+                Qualification
+              </th>
               <th className="px-4 py-3 font-medium text-navy/70">Contact</th>
               <th className="px-4 py-3 font-medium text-navy/70">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filtered.map((student) => (
+            {filtered.map((teacher) => (
               <tr
-                key={student.id}
+                key={teacher.id}
                 className={`border-b border-line last:border-0 transition-opacity duration-300 hover:bg-paper ${
-                  deletingId === student.id ? "opacity-0" : "opacity-100"
+                  deletingId === teacher.id ? "opacity-0" : "opacity-100"
                 }`}
               >
                 <td className="px-4 py-3">
-                  {student.photo ? (
-                    <img
-                      src={student.photo}
-                      alt={student.first_name}
-                      className="h-10 w-10 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-cobalt/10 text-xs font-medium text-cobalt">
-                      {student.first_name[0]}
-                      {student.last_name[0]}
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-cobalt/10 text-xs font-medium text-cobalt">
+                      {teacher.first_name[0]}
+                      {teacher.last_name[0]}
                     </div>
+                    <span className="font-medium text-navy">
+                      {teacher.first_name} {teacher.last_name}
+                    </span>
+                  </div>
+                </td>
+                <td className="px-4 py-3 text-navy/70">{teacher.email}</td>
+                <td className="px-4 py-3">
+                  {teacher.subject_names.length > 0 ? (
+                    <div className="flex flex-wrap gap-1">
+                      {teacher.subject_names.map((name) => (
+                        <span
+                          key={name}
+                          className="rounded-full bg-amber/10 px-2 py-0.5 text-xs font-medium text-amber"
+                        >
+                          {name}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-navy/40">—</span>
                   )}
                 </td>
-                <td className="px-4 py-3 font-medium text-navy">
-                  {student.first_name} {student.last_name}
-                </td>
-                <td className="px-4 py-3 text-navy/70">{student.email}</td>
-                <td className="px-4 py-3">
-                  <span className="rounded-full bg-amber/10 px-2 py-0.5 text-xs font-medium text-amber">
-                    Class {student.student_class}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-navy/70">{student.gender}</td>
                 <td className="px-4 py-3 text-navy/70">
-                  {student.parent_name}
+                  {teacher.qualification || "—"}
                 </td>
                 <td className="px-4 py-3 text-navy/70">
-                  {student.parent_contact}
+                  {teacher.contact || "—"}
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex gap-3">
                     <Link
-                      href={`/admin/students/${student.id}/edit`}
+                      href={`/admin/teachers/${teacher.id}/edit`}
                       className="text-sm text-cobalt hover:underline"
                     >
                       Edit
                     </Link>
                     <button
-                      onClick={() => askDelete(student.id)}
+                      onClick={() => askDelete(teacher.id)}
                       className="text-sm text-danger hover:underline"
                     >
                       Delete
@@ -208,10 +188,10 @@ export default function StudentsPage() {
         <div className="fixed inset-0 flex items-center justify-center bg-navy/40 backdrop-blur-sm">
           <div className="w-full max-w-sm rounded-lg border border-line bg-white p-6">
             <h3 className="mb-2 text-base font-semibold text-navy">
-              Delete student?
+              Delete teacher?
             </h3>
             <p className="mb-6 text-sm text-navy/60">
-              This will permanently remove the student's record and login
+              This will permanently remove the teacher's record and login
               access. This cannot be undone.
             </p>
             <div className="flex justify-end gap-3">
