@@ -34,7 +34,15 @@ export default function AdminLayout({
           ],
         },
         { label: "Attendance", href: "/admin/attendance" },
-        { label: "Fees", href: "/admin/fees" },
+        {
+          label: "Fees",
+          href: "/admin/fees",
+          children: [
+            { label: "Categories", href: "/admin/fees/categories" },
+            { label: "Structures", href: "/admin/fees/structures" },
+            { label: "Invoices", href: "/admin/fees/invoices" },
+          ],
+        },
         { label: "Library", href: "/admin/library" },
         { label: "Results", href: "/admin/results" },
         { label: "Reports", href: "/admin/reports" },

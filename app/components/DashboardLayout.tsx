@@ -75,7 +75,7 @@ export default function DashboardLayout({
       <aside className="flex w-64 flex-col bg-cobalt">
         <div className="flex flex-col items-center gap-3 px-6 py-8">
           <div className="rounded-full bg-white p-1.5">
-            <Image src="/logo.png" alt="TVSBS crest" width={56} height={56} />
+            <Image src="/logo3.png" alt="TVSBS crest" width={56} height={56} />
           </div>
           <span className="text-center text-sm font-semibold text-white">
             {title}
@@ -94,7 +94,7 @@ export default function DashboardLayout({
           <LogoutButton />
         </div>
       </aside>
-      <main className="flex-1 p-8">{children}</main>
+      <main className="min-w-0 flex-1 p-8">{children}</main>
     </div>
   );
 }
