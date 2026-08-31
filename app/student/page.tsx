@@ -4,7 +4,18 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-type Profile = { first_name: string; last_name: string; student_class: number };
+type Profile = {
+  first_name: string;
+  last_name: string;
+  email: string;
+  student_class: number;
+  roll_number: string | null;
+  date_of_birth: string;
+  gender: string;
+  parent_name: string;
+  parent_contact: string;
+  photo: string | null;
+};
 type AttendanceRecord = { date: string; status: string };
 type Result = {
   examination: number;
@@ -72,7 +83,7 @@ export default function StudentHomePage() {
   if (loading) {
     return (
       <div>
-        <div className="mb-6 h-6 w-48 animate-pulse rounded bg-line" />
+        <div className="mb-6 h-32 animate-pulse rounded-lg bg-line" />
         <div className="grid grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
             <div key={i} className="h-24 animate-pulse rounded-lg bg-line" />
@@ -84,12 +95,55 @@ export default function StudentHomePage() {
 
   return (
     <div>
-      <h2 className="mb-1 text-xl font-semibold text-navy">
-        Welcome, {profile?.first_name}
-      </h2>
-      <p className="mb-6 text-sm text-navy/60">
-        Here's a quick look at your progress.
-      </p>
+      <div className="mb-6 flex items-center gap-6 rounded-lg border border-line bg-white p-6">
+        {profile?.photo ? (
+          <img
+            src={profile.photo}
+            alt={profile.first_name}
+            className="h-24 w-24 rounded-full object-cover"
+          />
+        ) : (
+          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-cobalt/10 text-2xl font-medium text-cobalt">
+            {profile?.first_name[0]}
+            {profile?.last_name[0]}
+          </div>
+        )}
+
+        <div>
+          <h2 className="text-xl font-semibold text-navy">
+            {profile?.first_name} {profile?.last_name}
+          </h2>
+          <p className="text-sm text-navy/60">{profile?.email}</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <span className="rounded-full bg-amber/10 px-2 py-0.5 text-xs font-medium text-amber">
+              Class {profile?.student_class}
+            </span>
+            {profile?.roll_number && (
+              <span className="rounded-full bg-cobalt/10 px-2 py-0.5 text-xs font-medium text-cobalt">
+                Roll No. {profile.roll_number}
+              </span>
+            )}
+            <span className="rounded-full bg-line px-2 py-0.5 text-xs font-medium text-navy/60">
+              {profile?.gender === "M" ? "Male" : "Female"}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="mb-6 grid grid-cols-2 gap-4 rounded-lg border border-line bg-white p-4 text-sm">
+        <p>
+          <span className="font-medium text-navy">Date of Birth:</span>{" "}
+          <span className="text-navy/70">{profile?.date_of_birth}</span>
+        </p>
+        <p>
+          <span className="font-medium text-navy">Parent Name:</span>{" "}
+          <span className="text-navy/70">{profile?.parent_name}</span>
+        </p>
+        <p>
+          <span className="font-medium text-navy">Parent Contact:</span>{" "}
+          <span className="text-navy/70">{profile?.parent_contact}</span>
+        </p>
+      </div>
 
       <div className="mb-6 grid grid-cols-3 gap-4">
         <div className="rounded-lg border border-line bg-white p-4">
@@ -123,28 +177,6 @@ export default function StudentHomePage() {
           </p>
         </div>
       </div>
-
-      {latestExamResults.length > 0 && (
-        <div className="mb-6 rounded-lg border border-line bg-white p-4">
-          <p className="mb-3 text-sm font-medium text-navy">
-            {latestExamResults[0].examination_display} — Subject Breakdown
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {latestExamResults.map((r, i) => (
-              <span
-                key={i}
-                className={`rounded-full px-3 py-1 text-xs font-medium ${
-                  r.passed
-                    ? "bg-cobalt/10 text-cobalt"
-                    : "bg-danger/10 text-danger"
-                }`}
-              >
-                {r.marks_obtained}/{r.full_marks}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
 
       <div className="rounded-lg border border-line bg-white p-4">
         <p className="mb-3 text-sm font-medium text-navy">Quick Links</p>
