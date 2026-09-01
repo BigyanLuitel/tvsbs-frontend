@@ -13,7 +13,7 @@ export default function StudentLayout({
         { label: "Attendance", href: "/student/attendance" },
         { label: "Results", href: "/student/results" },
         { label: "Fees", href: "/student/fees" },
-        { label: "Library", href: "/student/library" },
+        { label: "Library", href: "/student/assistance" },
       ]}
     >
       {children}
