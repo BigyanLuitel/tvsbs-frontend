@@ -69,7 +69,7 @@ export default function AddTeacherPage() {
     <div>
       <h2 className="mb-6 text-xl font-semibold text-navy">Add Teacher</h2>
 
-      <div className="flex gap-6">
+      <div className="flex flex-col gap-6 lg:flex-row">
         <form
           onSubmit={handleSubmit}
           className="flex-1 rounded-lg border border-line bg-white p-6"
@@ -80,7 +80,7 @@ export default function AddTeacherPage() {
             </p>
           )}
 
-          <div className="mb-4 grid grid-cols-2 gap-4">
+          <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="mb-1 block text-sm text-navy/70">
                 First Name
@@ -176,7 +176,7 @@ export default function AddTeacherPage() {
             )}
           </div>
 
-          <div className="mb-6 grid grid-cols-2 gap-4">
+          <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="mb-1 block text-sm text-navy/70">
                 Qualification
@@ -207,7 +207,7 @@ export default function AddTeacherPage() {
           </button>
         </form>
 
-        <div className="w-72 shrink-0 self-start rounded-lg border border-line bg-white p-6 text-center">
+        <div className="w-full shrink-0 self-start rounded-lg border border-line bg-white p-6 text-center lg:w-72">
           <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-cobalt/10">
             <span className="text-xl font-medium text-cobalt">
               {form.first_name[0] || "?"}

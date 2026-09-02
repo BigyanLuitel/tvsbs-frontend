@@ -129,7 +129,7 @@ export default function AdminHomePage() {
         Dashboard Overview
       </h2>
 
-      <div className="mb-6 grid grid-cols-4 gap-4">
+      <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
         <div className="rounded-lg border border-line bg-white p-4">
           <p className="text-xs text-navy/60">Total Students</p>
           <p className="mt-1 text-2xl font-semibold text-cobalt">
@@ -156,7 +156,7 @@ export default function AdminHomePage() {
         </div>
       </div>
 
-      <div className="mb-6 grid grid-cols-2 gap-4">
+      <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="rounded-lg border border-line bg-white p-4">
           <p className="mb-3 text-sm font-medium text-navy">
             Students per Class
@@ -233,7 +233,7 @@ export default function AdminHomePage() {
         </ResponsiveContainer>
       </div>
 
-      <div className="mb-6 grid grid-cols-2 gap-4">
+      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
         <div className="rounded-lg border border-line bg-white p-4">
           <p className="mb-3 text-sm font-medium text-navy">
             Today's Attendance

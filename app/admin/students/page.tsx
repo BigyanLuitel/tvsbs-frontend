@@ -103,7 +103,7 @@ export default function StudentsPage() {
         </Link>
       </div>
 
-      <div className="mb-6 grid grid-cols-3 gap-4">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="rounded-lg border border-line bg-white p-4">
           <p className="text-xs text-navy/60">Total Students</p>
           <p className="mt-1 text-2xl font-semibold text-navy">
@@ -130,8 +130,8 @@ export default function StudentsPage() {
         className="mb-4 w-full max-w-sm rounded-md border border-line px-3 py-2 text-sm text-navy outline-none transition focus:border-cobalt"
       />
 
-      <div className="overflow-hidden rounded-lg border border-line bg-white">
-        <table className="w-full text-left text-sm">
+      <div className="overflow-x-auto rounded-lg border border-line bg-white">
+        <table className="w-full min-w-[800px] text-left text-sm">
           <thead>
             <tr className="border-b border-line bg-paper">
               <th className="px-4 py-3 font-medium text-navy/70">Photo</th>
@@ -171,7 +171,7 @@ export default function StudentsPage() {
                 </td>
                 <td className="px-4 py-3 text-navy/70">{student.email}</td>
                 <td className="px-4 py-3">
-                  <span className="rounded-full bg-amber/10 px-2 py-0.5 text-xs font-medium text-amber">
+                  <span className="whitespace-nowrap rounded-full bg-amber/10 px-2 py-0.5 text-xs font-medium text-amber">
                     Class {student.student_class}
                   </span>
                 </td>

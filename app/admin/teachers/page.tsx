@@ -106,7 +106,7 @@ export default function TeachersPage() {
         className="mb-4 w-full max-w-sm rounded-md border border-line px-3 py-2 text-sm text-navy outline-none transition focus:border-cobalt"
       />
 
-      <div className="overflow-hidden rounded-lg border border-line bg-white">
+      <div className="overflow-x-auto rounded-lg border border-line bg-white">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-line bg-paper">

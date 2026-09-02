@@ -13,6 +13,8 @@ export default function TeacherLayout({
         { label: "My Classes", href: "/teacher/classes" },
         { label: "Attendance", href: "/teacher/attendance" },
         { label: "Results", href: "/teacher/results" },
+        { label: "Assignments", href: "/teacher/assignments" },
+        { label: "Question Paper", href: "/teacher/question-paper" },
       ]}
     >
       {children}

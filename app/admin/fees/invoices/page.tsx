@@ -162,7 +162,7 @@ export default function FeeInvoicesPage() {
         </button>
       </div>
 
-      <div className="mb-6 grid grid-cols-3 gap-4">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="rounded-lg border border-line bg-white p-4">
           <p className="text-xs text-navy/60">Total Collected</p>
           <p className="mt-1 text-2xl font-semibold text-cobalt">
@@ -203,7 +203,7 @@ export default function FeeInvoicesPage() {
         </select>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-line bg-white">
+      <div className="overflow-x-auto rounded-lg border border-line bg-white">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-line bg-paper">

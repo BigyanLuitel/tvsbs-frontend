@@ -69,7 +69,8 @@ export default function LoginPage() {
         <div className="flex-1 bg-amber" />
       </div>
 
-      <div className="flex w-1/2 items-center justify-center bg-paper px-6">
+      <div className="flex w-full items-center justify-center bg-paper px-6 md:w-1/2">
+        {" "}
         <div className="w-full max-w-sm rounded-lg border border-line bg-white p-8">
           <div className="mb-6 flex items-center gap-3">
             <Image src="/logo3.png" alt="TVSBS crest" width={40} height={40} />

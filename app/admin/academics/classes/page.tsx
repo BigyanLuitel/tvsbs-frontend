@@ -159,7 +159,7 @@ export default function ClassesPage() {
         </button>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-line bg-white">
+      <div className="overflow-x-auto rounded-lg border border-line bg-white">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-line bg-paper">

@@ -137,7 +137,7 @@ export default function StudentAttendancePage() {
         </select>
       </div>
 
-      <div className="mb-6 grid grid-cols-4 gap-4">
+      <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
         <div className="rounded-lg border border-line bg-white p-4">
           <p className="text-xs text-navy/60">Overall</p>
           <p
@@ -170,7 +170,7 @@ export default function StudentAttendancePage() {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-line bg-white">
+      <div className="overflow-x-auto rounded-lg border border-line bg-white">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-line bg-paper">

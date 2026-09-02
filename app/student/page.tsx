@@ -175,7 +175,7 @@ export default function StudentHomePage() {
       </div>
 
       <p className="mb-3 text-sm font-medium text-navy">Overview</p>
-      <div className="mb-6 grid grid-cols-3 gap-4">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="rounded-lg border border-line bg-white p-4">
           <p className="mb-1 text-xs text-navy/60">Attendance</p>
           {attendanceChartData.length === 0 ? (

@@ -149,7 +149,7 @@ export default function StudentResultsPage() {
           </div>
 
           {profile && (
-            <div className="mb-6 grid grid-cols-3 gap-x-6 gap-y-2 rounded-md border border-line bg-paper p-4 text-sm">
+            <div className="mb-6 grid grid-cols-1 gap-x-6 gap-y-2 rounded-md border border-line bg-paper p-4 text-sm sm:grid-cols-2 md:grid-cols-3">
               <p>
                 <span className="font-medium text-navy">Name:</span>{" "}
                 <span className="text-navy/70">
@@ -222,7 +222,7 @@ export default function StudentResultsPage() {
             </span>
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <div className="overflow-hidden rounded-md border border-line">
               <table className="w-full text-left text-xs">
                 <thead>

@@ -1,275 +1,431 @@
-// app/student/page.tsx
+// app/admin/results/page.tsx
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-} from "recharts";
+import { useState, useEffect } from "react";
 
-type Profile = {
+type ClassOption = { id: number; class_name: string; section: string };
+type ExamOption = {
+  id: number;
+  term: number;
+  term_display: string;
+  academic_year: string;
+  is_final: boolean;
+};
+type Student = {
+  id: number;
   first_name: string;
   last_name: string;
-  email: string;
   student_class: number;
-  roll_number: string | null;
-  date_of_birth: string;
-  gender: string;
-  parent_name: string;
-  parent_contact: string;
-  photo: string | null;
 };
-type AttendanceRecord = { date: string; status: string };
-type Result = {
+type ResultRow = {
+  id: number;
+  student: number;
+  student_email: string;
+  subject: number;
   subject_name: string;
   examination: number;
-  examination_display: string;
   marks_obtained: string;
   full_marks: string;
+  grade: string;
   passed: boolean;
 };
-type Invoice = { outstanding: string; status: string };
 
-export default function StudentHomePage() {
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
-  const [results, setResults] = useState<Result[]>([]);
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
+export default function AdminResultsPage() {
+  const [classes, setClasses] = useState<ClassOption[]>([]);
+  const [exams, setExams] = useState<ExamOption[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [results, setResults] = useState<ResultRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [photoError, setPhotoError] = useState(false);
+
+  const [selectedClass, setSelectedClass] = useState("");
+  const [selectedExam, setSelectedExam] = useState("");
+
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [generating, setGenerating] = useState(false);
+  const [genError, setGenError] = useState("");
+  const [attendance, setAttendance] = useState<
+    { student: number; status: string }[]
+  >([]);
+
+  const [isPublished, setIsPublished] = useState(false);
+  const [publishLoading, setPublishLoading] = useState(false);
 
   useEffect(() => {
     Promise.all([
-      fetch("/api/students/me").then((res) => res.json()),
-      fetch("/api/attendance/me").then((res) => res.json()),
-      fetch("/api/results/me").then((res) => res.json()),
-      fetch("/api/fees/invoices/me").then((res) => res.json()),
-    ]).then(([profileData, attendanceData, resultsData, invoicesData]) => {
-      setProfile(profileData);
-      setAttendance(attendanceData);
-      setResults(resultsData);
-      setInvoices(invoicesData);
-      setLoading(false);
-    });
+      fetch("/api/classes").then((res) => res.json()),
+      fetch("/api/examinations").then((res) => res.json()),
+      fetch("/api/students").then((res) => res.json()),
+      fetch("/api/results").then((res) => res.json()),
+      fetch("/api/attendance").then((res) => res.json()),
+    ]).then(
+      ([classesData, examsData, studentsData, resultsData, attendanceData]) => {
+        setClasses(classesData);
+        setExams(examsData);
+        setStudents(studentsData);
+        setResults(resultsData);
+        setAttendance(attendanceData);
+        setLoading(false);
+      },
+    );
   }, []);
 
-  const nonExcused = attendance.filter((a) => a.status !== "EXCUSED");
-  const attended = nonExcused.filter(
-    (a) => a.status === "PRESENT" || a.status === "LATE",
-  ).length;
-  const overallAttendance =
-    nonExcused.length > 0
-      ? Math.round((attended / nonExcused.length) * 100)
-      : null;
+  useEffect(() => {
+    if (!selectedClass || !selectedExam) return;
+    fetch(
+      `/api/results/publication-status?examination_id=${selectedExam}&class_id=${selectedClass}`,
+    )
+      .then((res) => res.json())
+      .then((data) => setIsPublished(data.published));
+  }, [selectedClass, selectedExam]);
 
-  const attendanceChartData =
-    overallAttendance !== null
-      ? [
-          { name: "Attended", value: overallAttendance },
-          { name: "Missed", value: 100 - overallAttendance },
-        ]
-      : [];
-
-  const attendanceColor =
-    overallAttendance !== null && overallAttendance >= 75
-      ? "#2C6CC4"
-      : overallAttendance !== null && overallAttendance >= 50
-        ? "#E8862E"
-        : "#DC2626";
-
-  const latestExamId =
-    results.length > 0 ? results[results.length - 1].examination : null;
-  const latestExamResults = results.filter(
-    (r) => r.examination === latestExamId,
+  const roster = students.filter(
+    (s) => s.student_class === Number(selectedClass),
   );
-  const latestTotal = latestExamResults.reduce(
-    (sum, r) => sum + Number(r.marks_obtained),
-    0,
+  const rosterIds = roster.map((s) => s.id);
+  const classResults = results.filter(
+    (r) =>
+      rosterIds.includes(r.student) && r.examination === Number(selectedExam),
   );
-  const latestFull = latestExamResults.reduce(
-    (sum, r) => sum + Number(r.full_marks),
-    0,
-  );
-  const latestPercent =
-    latestFull > 0 ? Math.round((latestTotal / latestFull) * 100) : null;
-  const latestPassed =
-    latestExamResults.length > 0 && latestExamResults.every((r) => r.passed);
+  const subjectNames = Array.from(
+    new Set(classResults.map((r) => r.subject_name)),
+  ).sort();
 
-  const subjectChartData = latestExamResults.map((r) => ({
-    subject:
-      r.subject_name.length > 8
-        ? r.subject_name.slice(0, 8) + "…"
-        : r.subject_name,
-    percent: Math.round(
-      (Number(r.marks_obtained) / Number(r.full_marks)) * 100,
-    ),
-  }));
+  const pivoted = roster.map((student) => {
+    const studentResults = classResults.filter((r) => r.student === student.id);
+    const marksBySubject: Record<string, ResultRow | undefined> = {};
+    subjectNames.forEach((name) => {
+      marksBySubject[name] = studentResults.find(
+        (r) => r.subject_name === name,
+      );
+    });
 
-  const totalOutstanding = invoices.reduce(
-    (sum, inv) => sum + Math.max(Number(inv.outstanding), 0),
-    0,
-  );
+    const totalObtained = studentResults.reduce(
+      (sum, r) => sum + Number(r.marks_obtained),
+      0,
+    );
+    const totalFull = studentResults.reduce(
+      (sum, r) => sum + Number(r.full_marks),
+      0,
+    );
+    const overallPercent =
+      totalFull > 0 ? Math.round((totalObtained / totalFull) * 100) : null;
+    const allPassed =
+      studentResults.length > 0 && studentResults.every((r) => r.passed);
+
+    return {
+      student,
+      marksBySubject,
+      overallPercent,
+      allPassed,
+      hasResults: studentResults.length > 0,
+    };
+  });
+
+  function attendancePercentFor(studentId: number) {
+    const studentRecords = attendance.filter(
+      (a) => a.student === studentId && a.status !== "EXCUSED",
+    );
+    if (studentRecords.length === 0) return null;
+    const attended = studentRecords.filter(
+      (a) => a.status === "PRESENT" || a.status === "LATE",
+    ).length;
+    return Math.round((attended / studentRecords.length) * 100);
+  }
+
+  async function togglePublish() {
+    setPublishLoading(true);
+    const endpoint = isPublished
+      ? "/api/results/unpublish"
+      : "/api/results/publish";
+
+    await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        examination_id: Number(selectedExam),
+        class_id: Number(selectedClass),
+      }),
+    });
+
+    setIsPublished(!isPublished);
+    setPublishLoading(false);
+  }
+
+  async function handleGenerate() {
+    setGenerating(true);
+    setGenError("");
+    setPreviewUrl(null);
+
+    const params = new URLSearchParams({
+      examination_id: selectedExam,
+      class_id: selectedClass,
+      academic_year:
+        exams.find((e) => e.id === Number(selectedExam))?.academic_year || "",
+    });
+
+    const res = await fetch(`/api/results/marksheets?${params.toString()}`);
+
+    setGenerating(false);
+
+    if (!res.ok) {
+      const errData = await res.json();
+      setGenError(errData.detail || "Failed to generate marksheets");
+      return;
+    }
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    setPreviewUrl(url);
+  }
 
   if (loading) {
-    return (
-      <div>
-        <div className="mb-6 h-32 animate-pulse rounded-lg bg-line" />
-        <div className="grid grid-cols-3 gap-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-40 animate-pulse rounded-lg bg-line" />
-          ))}
-        </div>
-      </div>
-    );
+    return <p className="text-sm text-navy/60">Loading results data...</p>;
   }
+
+  const passCount = pivoted.filter((p) => p.hasResults && p.allPassed).length;
+  const failCount = pivoted.filter((p) => p.hasResults && !p.allPassed).length;
 
   return (
     <div>
-      <div className="mb-6 overflow-hidden rounded-lg border border-line bg-white">
-        <div className="h-14 bg-cobalt" />
-        <div className="flex items-end gap-5 px-6 pb-6 -mt-8">
-          {profile?.photo && !photoError ? (
-            <img
-              src={profile.photo}
-              alt={profile.first_name}
-              onError={() => setPhotoError(true)}
-              className="h-20 w-20 rounded-full border-4 border-white object-cover"
-            />
-          ) : (
-            <div className="flex h-20 w-20 items-center justify-center rounded-full border-4 border-white bg-cobalt/10 text-xl font-medium text-cobalt">
-              {profile?.first_name[0]}
-              {profile?.last_name[0]}
-            </div>
-          )}
-          <div className="pb-1">
-            <h2 className="text-xl font-semibold text-navy">
-              {profile?.first_name} {profile?.last_name}
-            </h2>
-            <p className="text-sm text-navy/60">{profile?.email}</p>
-          </div>
+      <h2 className="mb-6 text-xl font-semibold text-navy">Results</h2>
+
+      <div className="mb-6 flex flex-wrap items-end gap-4 rounded-lg border border-line bg-white p-4">
+        <div>
+          <label className="mb-1 block text-sm text-navy/70">Class</label>
+          <select
+            value={selectedClass}
+            onChange={(e) => setSelectedClass(e.target.value)}
+            className="rounded-md border border-line px-3 py-2 text-sm outline-none focus:border-cobalt"
+          >
+            <option value="">Select class</option>
+            {classes.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.class_name} {c.section}
+              </option>
+            ))}
+          </select>
         </div>
-        <div className="flex flex-wrap gap-2 border-t border-line px-6 py-3">
-          <span className="rounded-full bg-amber/10 px-2 py-0.5 text-xs font-medium text-amber">
-            Class {profile?.student_class}
-          </span>
-          {profile?.roll_number && (
-            <span className="rounded-full bg-cobalt/10 px-2 py-0.5 text-xs font-medium text-cobalt">
-              Roll No. {profile.roll_number}
-            </span>
-          )}
-          <span className="rounded-full bg-line px-2 py-0.5 text-xs font-medium text-navy/60">
-            {profile?.gender === "M" ? "Male" : "Female"}
-          </span>
-          <span className="rounded-full bg-line px-2 py-0.5 text-xs font-medium text-navy/60">
-            DOB: {profile?.date_of_birth}
-          </span>
+
+        <div>
+          <label className="mb-1 block text-sm text-navy/70">Examination</label>
+          <select
+            value={selectedExam}
+            onChange={(e) => setSelectedExam(e.target.value)}
+            className="rounded-md border border-line px-3 py-2 text-sm outline-none focus:border-cobalt"
+          >
+            <option value="">Select exam</option>
+            {exams.map((e) => (
+              <option key={e.id} value={e.id}>
+                {e.term_display} ({e.academic_year})
+              </option>
+            ))}
+          </select>
         </div>
+
+        {selectedClass && selectedExam && (
+          <>
+            <button
+              onClick={togglePublish}
+              disabled={publishLoading}
+              className={`rounded-md px-4 py-2 text-sm font-medium transition disabled:opacity-50 ${
+                isPublished
+                  ? "border border-danger text-danger hover:bg-danger/10"
+                  : "bg-cobalt text-white hover:bg-cobalt/90"
+              }`}
+            >
+              {publishLoading
+                ? "..."
+                : isPublished
+                  ? "Unpublish Results"
+                  : "Publish Results"}
+            </button>
+            <button
+              onClick={handleGenerate}
+              disabled={generating}
+              className="rounded-md bg-cobalt px-4 py-2 text-sm font-medium text-white transition hover:bg-cobalt/90 disabled:opacity-50"
+            >
+              {generating ? "Generating..." : "Generate Marksheets"}
+            </button>
+          </>
+        )}
       </div>
 
-      <p className="mb-3 text-sm font-medium text-navy">Overview</p>
-      <div className="mb-6 grid grid-cols-3 gap-4">
-        <div className="rounded-lg border border-line bg-white p-4">
-          <p className="mb-1 text-xs text-navy/60">Attendance</p>
-          {attendanceChartData.length === 0 ? (
-            <p className="text-sm text-navy/40">No records yet</p>
-          ) : (
-            <div className="flex items-center gap-3">
-              <div className="h-20 w-20">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={attendanceChartData}
-                      dataKey="value"
-                      innerRadius={26}
-                      outerRadius={38}
-                      startAngle={90}
-                      endAngle={-270}
-                    >
-                      <Cell fill={attendanceColor} />
-                      <Cell fill="#E7E2DC" />
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <p
-                className="text-2xl font-semibold"
-                style={{ color: attendanceColor }}
-              >
-                {overallAttendance}%
-              </p>
-            </div>
-          )}
-        </div>
-
-        <div className="rounded-lg border border-line bg-white p-4">
-          <p className="mb-1 text-xs text-navy/60">Latest Exam</p>
-          {latestPercent === null ? (
-            <p className="mt-2 text-sm text-navy/40">
-              No published results yet
-            </p>
-          ) : (
-            <>
-              <p
-                className={`text-2xl font-semibold ${latestPassed ? "text-cobalt" : "text-danger"}`}
-              >
-                {latestPercent}%
-              </p>
-              <p className="mt-1 text-xs text-navy/50">
-                {latestExamResults[0]?.examination_display}
-              </p>
-            </>
-          )}
-        </div>
-
-        <div className="rounded-lg border border-line bg-white p-4">
-          <p className="mb-1 text-xs text-navy/60">Fees Outstanding</p>
-          <p className="text-2xl font-semibold text-danger">
-            Rs. {totalOutstanding.toFixed(0)}
-          </p>
-        </div>
-      </div>
-
-      {subjectChartData.length > 0 && (
-        <div className="mb-6 rounded-lg border border-line bg-white p-4">
-          <p className="mb-3 text-sm font-medium text-navy">
-            {latestExamResults[0]?.examination_display} — Subject Performance
-          </p>
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={subjectChartData}>
-              <XAxis dataKey="subject" tick={{ fontSize: 10 }} />
-              <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} />
-              <Tooltip />
-              <Bar dataKey="percent" fill="#2C6CC4" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+      {selectedClass && selectedExam && (
+        <p className="mb-4 text-sm">
+          Status:{" "}
+          <span
+            className={
+              isPublished ? "font-medium text-cobalt" : "font-medium text-amber"
+            }
+          >
+            {isPublished ? "Published to students" : "Not published"}
+          </span>
+        </p>
       )}
 
-      <div className="rounded-lg border border-line bg-white p-4">
-        <p className="mb-3 text-sm font-medium text-navy">Quick Links</p>
-        <div className="flex flex-wrap gap-3">
-          <Link
-            href="/student/attendance"
-            className="rounded-md border border-line px-3 py-2 text-sm text-navy/70 hover:border-cobalt hover:text-cobalt"
-          >
-            View Attendance
-          </Link>
-          <Link
-            href="/student/results"
-            className="rounded-md border border-line px-3 py-2 text-sm text-navy/70 hover:border-cobalt hover:text-cobalt"
-          >
-            View Marksheet
-          </Link>
+      {genError && (
+        <p className="mb-4 rounded-md bg-coral/10 px-3 py-2 text-sm text-coral">
+          {genError}
+        </p>
+      )}
+
+      {!selectedClass || !selectedExam ? (
+        <p className="text-sm text-navy/60">
+          Select a class and examination to view results.
+        </p>
+      ) : (
+        <>
+          <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="rounded-lg border border-line bg-white p-4">
+              <p className="text-xs text-navy/60">Passed</p>
+              <p className="mt-1 text-2xl font-semibold text-cobalt">
+                {passCount}
+              </p>
+            </div>
+            <div className="rounded-lg border border-line bg-white p-4">
+              <p className="text-xs text-navy/60">Failed</p>
+              <p className="mt-1 text-2xl font-semibold text-danger">
+                {failCount}
+              </p>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto rounded-lg border border-line bg-white">
+            <table className="w-full min-w-[900px] text-left text-sm">
+              <thead>
+                <tr className="border-b border-line bg-paper">
+                  <th className="px-4 py-3 font-medium text-navy/70">
+                    Student
+                  </th>
+                  {subjectNames.map((name) => (
+                    <th
+                      key={name}
+                      className="px-4 py-3 font-medium text-navy/70"
+                    >
+                      {name}
+                    </th>
+                  ))}
+                  <th className="px-4 py-3 font-medium text-navy/70">
+                    Attendance
+                  </th>
+                  <th className="px-4 py-3 font-medium text-navy/70">
+                    Overall %
+                  </th>
+                  <th className="px-4 py-3 font-medium text-navy/70">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pivoted.map(
+                  ({
+                    student,
+                    marksBySubject,
+                    overallPercent,
+                    allPassed,
+                    hasResults,
+                  }) => {
+                    const attPct = attendancePercentFor(student.id);
+                    return (
+                      <tr
+                        key={student.id}
+                        className="border-b border-line last:border-0"
+                      >
+                        <td className="px-4 py-3 font-medium text-navy">
+                          {student.first_name} {student.last_name}
+                        </td>
+                        {subjectNames.map((name) => {
+                          const r = marksBySubject[name];
+                          return (
+                            <td key={name} className="px-4 py-3 text-navy/70">
+                              {r ? (
+                                `${r.marks_obtained}/${r.full_marks}`
+                              ) : (
+                                <span className="text-navy/30">—</span>
+                              )}
+                            </td>
+                          );
+                        })}
+                        <td className="px-4 py-3">
+                          {attPct === null ? (
+                            <span className="text-navy/30">—</span>
+                          ) : (
+                            <span
+                              className={
+                                attPct >= 75
+                                  ? "text-cobalt"
+                                  : attPct >= 50
+                                    ? "text-amber"
+                                    : "text-danger"
+                              }
+                            >
+                              {attPct}%
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 font-medium text-navy">
+                          {overallPercent !== null ? (
+                            `${overallPercent}%`
+                          ) : (
+                            <span className="text-navy/30">—</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          {hasResults ? (
+                            <span
+                              className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                                allPassed
+                                  ? "bg-cobalt/10 text-cobalt"
+                                  : "bg-danger/10 text-danger"
+                              }`}
+                            >
+                              {allPassed ? "Pass" : "Fail"}
+                            </span>
+                          ) : (
+                            <span className="text-navy/30">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  },
+                )}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+
+      {previewUrl && (
+        <div className="fixed inset-0 flex items-center justify-center bg-navy/40 backdrop-blur-sm p-6">
+          <div className="flex h-full w-full max-w-3xl flex-col rounded-lg border border-line bg-white p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-base font-semibold text-navy">
+                Marksheet Preview
+              </h3>
+              <div className="flex gap-3">
+                <a
+                  href={previewUrl}
+                  download="marksheets.pdf"
+                  className="rounded-md bg-cobalt px-4 py-2 text-sm font-medium text-white hover:bg-cobalt/90"
+                >
+                  Download
+                </a>
+                <button
+                  onClick={() => {
+                    URL.revokeObjectURL(previewUrl);
+                    setPreviewUrl(null);
+                  }}
+                  className="rounded-md border border-line px-4 py-2 text-sm font-medium text-navy/70 hover:bg-paper"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+            <iframe
+              src={previewUrl}
+              className="flex-1 rounded-md border border-line"
+            />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

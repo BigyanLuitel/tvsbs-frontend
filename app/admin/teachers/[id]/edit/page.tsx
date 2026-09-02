@@ -79,12 +79,12 @@ export default function EditTeacherPage() {
       <div>
         <div className="mb-6 h-6 w-40 animate-pulse rounded bg-line" />
         <div className="max-w-2xl space-y-4 rounded-lg border border-line bg-white p-6">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="h-9 animate-pulse rounded bg-line" />
             <div className="h-9 animate-pulse rounded bg-line" />
           </div>
           <div className="h-9 animate-pulse rounded bg-line" />
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="h-9 animate-pulse rounded bg-line" />
             <div className="h-9 animate-pulse rounded bg-line" />
           </div>
@@ -107,7 +107,7 @@ export default function EditTeacherPage() {
           </p>
         )}
 
-        <div className="mb-4 grid grid-cols-2 gap-4">
+        <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className="mb-1 block text-sm text-navy/70">
               First Name
@@ -179,7 +179,7 @@ export default function EditTeacherPage() {
           )}
         </div>
 
-        <div className="mb-6 grid grid-cols-2 gap-4">
+        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className="mb-1 block text-sm text-navy/70">
               Qualification

@@ -68,7 +68,7 @@ export default function AddStudentPage() {
     <div>
       <h2 className="mb-6 text-xl font-semibold text-navy">Add Student</h2>
 
-      <div className="flex gap-6">
+      <div className="flex flex-col gap-6 lg:flex-row">
         <form
           onSubmit={handleSubmit}
           className="flex-1 rounded-lg border border-line bg-white p-6"
@@ -79,7 +79,7 @@ export default function AddStudentPage() {
             </p>
           )}
 
-          <div className="mb-4 grid grid-cols-2 gap-4">
+          <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="mb-1 block text-sm text-navy/70">
                 First Name
@@ -126,7 +126,7 @@ export default function AddStudentPage() {
             />
           </div>
 
-          <div className="mb-4 grid grid-cols-2 gap-4">
+          <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="mb-1 block text-sm text-navy/70">Class</label>
               <select
@@ -169,7 +169,7 @@ export default function AddStudentPage() {
             />
           </div>
 
-          <div className="mb-4 grid grid-cols-2 gap-4">
+          <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="mb-1 block text-sm text-navy/70">
                 Parent Name

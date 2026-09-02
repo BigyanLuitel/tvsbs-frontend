@@ -115,7 +115,7 @@ export default function EditStudentPage() {
           </p>
         )}
 
-        <div className="mb-4 grid grid-cols-2 gap-4">
+        <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className="mb-1 block text-sm text-navy/70">
               First Name
@@ -138,7 +138,7 @@ export default function EditStudentPage() {
           </div>
         </div>
 
-        <div className="mb-4 grid grid-cols-2 gap-4">
+        <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className="mb-1 block text-sm text-navy/70">Class</label>
             <select
@@ -181,7 +181,7 @@ export default function EditStudentPage() {
           />
         </div>
 
-        <div className="mb-4 grid grid-cols-2 gap-4">
+        <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className="mb-1 block text-sm text-navy/70">
               Parent Name
