@@ -41,6 +41,10 @@ export default function AdminLayout({
             { label: "Categories", href: "/admin/fees/categories" },
             { label: "Structures", href: "/admin/fees/structures" },
             { label: "Invoices", href: "/admin/fees/invoices" },
+            {
+              label: "Student Assignments",
+              href: "/admin/fees/student-assignments",
+            },
           ],
         },
         { label: "Library", href: "/admin/library" },
