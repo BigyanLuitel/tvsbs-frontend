@@ -42,8 +42,18 @@ export default function FeeInvoicesPage() {
   const [paySubmitting, setPaySubmitting] = useState(false);
   const [payError, setPayError] = useState("");
 
+  const [students, setStudents] = useState<
+    { id: number; first_name: string; last_name: string }[]
+  >([]);
+  const [billStudent, setBillStudent] = useState("");
+  const [billMonth, setBillMonth] = useState("");
+  const [billLoading, setBillLoading] = useState(false);
+  const [billError, setBillError] = useState("");
   useEffect(() => {
     loadInvoices();
+    fetch("/api/students")
+      .then((res) => res.json())
+      .then(setStudents);
   }, []);
 
   function loadInvoices() {
@@ -108,6 +118,26 @@ export default function FeeInvoicesPage() {
     setPayingInvoice(null);
     setPayAmount("");
     loadInvoices();
+  }
+  async function handleDownloadBill() {
+    if (!billStudent || !billMonth) return;
+    setBillError("");
+    setBillLoading(true);
+
+    const res = await fetch(
+      `/api/fees/invoices/bill?student_id=${billStudent}&month=${billMonth}`,
+    );
+    setBillLoading(false);
+
+    if (!res.ok) {
+      const errData = await res.json();
+      setBillError(errData.detail || "Failed to generate bill");
+      return;
+    }
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    window.open(url, "_blank");
   }
   const filtered = invoices.filter((inv) => {
     const matchesSearch =
@@ -201,6 +231,40 @@ export default function FeeInvoicesPage() {
           <option value="PARTIALLY_PAID">Partially Paid</option>
           <option value="PAID">Paid</option>
         </select>
+      </div>
+      <div className="mb-6 flex flex-wrap items-end gap-3 rounded-lg border border-line bg-white p-4">
+        <div>
+          <label className="mb-1 block text-sm text-navy/70">Student</label>
+          <select
+            value={billStudent}
+            onChange={(e) => setBillStudent(e.target.value)}
+            className="rounded-md border border-line px-3 py-2 text-sm outline-none focus:border-cobalt"
+          >
+            <option value="">Select student</option>
+            {students.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.first_name} {s.last_name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="mb-1 block text-sm text-navy/70">Month</label>
+          <input
+            value={billMonth}
+            onChange={(e) => setBillMonth(e.target.value)}
+            placeholder="e.g. 2026-05"
+            className="rounded-md border border-line px-3 py-2 text-sm outline-none focus:border-cobalt"
+          />
+        </div>
+        <button
+          onClick={handleDownloadBill}
+          disabled={billLoading || !billStudent || !billMonth}
+          className="rounded-md bg-cobalt px-4 py-2 text-sm font-medium text-white transition hover:bg-cobalt/90 disabled:opacity-50"
+        >
+          {billLoading ? "Generating..." : "Download Bill"}
+        </button>
+        {billError && <p className="text-sm text-coral">{billError}</p>}
       </div>
 
       <div className="overflow-x-auto rounded-lg border border-line bg-white">

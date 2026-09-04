@@ -47,7 +47,14 @@ export default function AdminLayout({
             },
           ],
         },
-        { label: "Library", href: "/admin/library" },
+        {
+          label: "Library",
+          href: "/admin/library",
+          children: [
+            { label: "Books", href: "/admin/library/books" },
+            { label: "Circulation", href: "/admin/library/circulations" },
+          ],
+        },
         { label: "Results", href: "/admin/results" },
         { label: "Reports", href: "/admin/reports" },
       ]}

@@ -135,7 +135,7 @@ export default function DashboardLayout({
 
         <div className="mx-6 border-t border-white/10" />
 
-        <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-4 py-6">
+        <nav className="sidebar-nav flex flex-1 flex-col gap-1 overflow-y-auto px-4 py-6">
           {links.map((link) => (
             <NavItem
               key={link.href}
